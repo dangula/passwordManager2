@@ -10,7 +10,7 @@ Project for Python cert class
     
 ## prerequisites
 * pycrypto
-* shelve db
+* flask
 
 ## How to run
   Password Manager is a REST API running as a Flask app. To run Check out the code, make sure prerequisites are installed.
