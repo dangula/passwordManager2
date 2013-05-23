@@ -13,7 +13,10 @@ STORE_DB = 'passwordStore.db'
 
 
 @app.route('/', methods=['GET'])
-def test():
+def serviceUp():
+    """
+    Retruns 200 OK if service is up
+    """
     data = {'status': 'Service Up'}
     print request.data
     return jsonify(data), 200
@@ -21,6 +24,12 @@ def test():
 
 @app.route('/addUser', methods=['POST'])
 def addNewUser():
+    """
+    This method is add/persist a new user to shelve db
+    If the user already exists Bad Request 400 is returned
+    If the user doesn't exist and passes user validation,
+    User is persisted and 200 OK is returned.
+    """
     try:
         data = json.dumps(request.data)
         data_str = json.loads(data)
@@ -62,6 +71,11 @@ def addNewUser():
 
 @app.route('/getUser/<user_name>/<password>', methods=['GET'])
 def getUser(user_name, password):
+    """
+    Gets the user with user_name and password. If there is no User
+    with user_name password combo 404 Not Found is retruned.
+    If user exist, the the user is returned.
+    """
     db = shelveWrapper(STORE_DB)
     user = db.retriveUser(user_name, password)
     if isinstance(user, User):
@@ -72,8 +86,15 @@ def getUser(user_name, password):
         return jsonify(return_data), 404
 
 
-@app.route('/addpassword/<user_name>/<password>', methods=['POST'])
+@app.route('/addPassword/<user_name>/<password>', methods=['POST'])
 def addPasswordInfo(user_name, password):
+    """
+    Adds password for username/password combo in the URI.
+    a user with corresponding password must already exist
+    if not a 400 Bad Rquest is returned.
+    If the User is present and passwordInfo passes validation
+    then it is persisted and 200 OK is returned.
+    """
     try:
         db = shelveWrapper(STORE_DB)
         user = db.retriveUser(user_name, password)
@@ -123,8 +144,14 @@ def addPasswordInfo(user_name, password):
             return jsonify(data_string), 400
 
 
-@app.route('/getPasswordInfo/<user_name>/<password>/<name>', methods={'GET'})
+@app.route('/getPassword/<user_name>/<password>/<name>', methods={'GET'})
 def getPasswordInfo(user_name, password, name):
+    """
+    Gets passwordInfo with give name, the username  and password in URI
+    must be present, if not 400 Bad Reqeust is returned.
+    If the give name is not persent 404 NOT found is returned
+    If the name exists then the 200 Ok is retruned with decryptd password.
+    """
     db = shelveWrapper(STORE_DB)
     user = db.retriveUser(user_name, password)
     if isinstance(user, User):
@@ -145,9 +172,17 @@ def getPasswordInfo(user_name, password, name):
         return jsonify(return_data), 404
 
 
-@app.route('/searchPasswordInfo/<user_name>/<password>/'
+@app.route('/searchPassword/<user_name>/<password>/'
            '<name>/<search>', methods={'GET'})
 def searchPasswordInfo(user_name, password, name, search):
+    """
+    This method searches all passwords with give name and search string
+    There must be a existing username and password, if not 400 Bad request
+    is returned. The search string must be name or phrase, if not
+    400 Bad request is returned. If no password are found with search
+    criteria 404 not found is returned. Else a list of passwords qualifying
+    for search criteria is returned.
+    """
     db = shelveWrapper(STORE_DB)
     if name == 'name' or name == 'phrase':
         if len(search) <= 2:
